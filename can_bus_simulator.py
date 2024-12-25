@@ -38,6 +38,7 @@ class CANBus:
         ''' BITWISE AND-GATE '''
         if attr == self.frame_segments[0]:      # "sof"
             self.frame += str(b1 & b2)
+            return 0
             
         elif attr == self.frame_segments[1]:    # "id - arbitration phase"
             if count == 0:
@@ -63,6 +64,7 @@ class CANBus:
                     self.frame += str(b1 & b2)
                     
             count += 1
+            return 0
         
         elif attr == self.frame_segments[2]:    # "dlc - bit error starts here"
             if count == 11:
@@ -71,19 +73,26 @@ class CANBus:
                 
             self.check_bit_error(b1, b2, node1, node2)
             # self.frame += str(b1 & b2)
+            return 0
         
         elif attr == self.frame_segments[3]:    # "data"
             self.frame += str(b1 & b2)
+            return 0
         
         elif attr == self.frame_segments[4]:    # "crc"
             self.frame += str(b1 & b2)
+            return 0
         
         elif attr == self.frame_segments[5]:    # "ack"
             self.frame += str(b1 & b2)
+            return 0
         
         elif attr == self.frame_segments[6]:    # "eof"
             self.frame += str(b1 & b2)
+            return 0
         
+        self.print_out_sequence()
+        self.frame = ""
         # return 0
         
     def check_bit_error(self, b1, b2, node1, node2):
@@ -94,13 +103,13 @@ class CANBus:
         else:
             # Here if there is a mismatch will be raise the error to the corresponding node
             if b1 == 0 and b2 == 1:
-                print("Bit-error detected for: ", node1.name)
-                node1.error_detected()
+                print("Bit-error detected, recessive bit from: ", node2.name)   # recessive (1) from node2
+                node2.error_detected()
                 return True
                 
             elif b1 == 1 and b2 == 0:
-                print("Bit-error detected for: ", node2.name)
-                node2.error_detected()
+                print("Bit-error detected, recessive bit from: ", node1.name)   # recessive (1) from node1
+                node1.error_detected()
                 return True
                     
             else:
@@ -131,8 +140,8 @@ if __name__ == "__main__":
     frame1_victime = victime_ecu.make_frame(id="01000100001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
     frame2_adversary = adversary_ecu.make_frame(id="01000000001", dlc="0000", data="0000000100000010000000110000010011111111111111111111111100000000")
         
-    print("".join(getattr(frame1_victime, attribute) for attribute in frame1_victime.__dict__))
-    print("".join(getattr(frame2_adversary, attribute) for attribute in frame2_adversary.__dict__))
+    print("victime " + "".join(getattr(frame1_victime, attribute) for attribute in frame1_victime.__dict__))
+    print("adversary " + "".join(getattr(frame2_adversary, attribute) for attribute in frame2_adversary.__dict__))
     
     print("\n")
         
@@ -154,5 +163,23 @@ if __name__ == "__main__":
             frame2_bits = getattr(frame2_adversary, attr)
             for b1, b2 in zip(frame1_bits, frame2_bits):
                 can_bus.receive_frames(int(b1), int(b2), attr, node1=victime_ecu, node2=adversary_ecu)
+              
+    # TODO la prima volta entrambi i nodi dovrebbero entrare in error passive, poi l'attaccante dovrebbe tornare in error active  
+    try:
+        for i in range(1, 40):
+            print("\n")
+            print("loop n: ", i)
+            if can_bus.is_idle():
+                for attr in frame1_victime.__dict__:
+                    frame1_bits = getattr(frame1_victime, attr)
+                    frame2_bits = getattr(frame2_adversary, attr)
+                    for b1, b2 in zip(frame1_bits, frame2_bits):
+                        can_bus.receive_frames(int(b1), int(b2), attr, node1=victime_ecu, node2=adversary_ecu)
 
-    can_bus.print_out_sequence()
+            # can_bus.print_out_sequence()
+            print(adversary_ecu)
+            print(victime_ecu)
+
+    except:
+        print("\n******** System-Off ********\n")
+    
