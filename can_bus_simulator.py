@@ -1,3 +1,4 @@
+import time
 from bus_frame import CANFrame
 from node import Node
 
@@ -21,17 +22,23 @@ class CANBus:
         if count == 0:
             self.set_status(self.status[1])
             print(node.name + " frame in elaboration. CAN bus status: ", self.stat)
+            
         elif count == 105:
             self.set_status(self.status[0])
             print(node.name + " frame elaborated. CAN bus status: ", self.stat)
+            count = 0
+            return 0
+        
+        count += 1
 
     def receive_frames(self, b1=None, b2=None, attr="", node1=None, node2=None):
         global count
         
         if b1 == None or b2 == None:
+            if count == 0:
+                print("*** No Arbitration ***")
             x = (lambda x, y: x if y is None else y)(node1, node2)
             self.elaborate_frame(x)
-            count += 1
             return 0
         
         
@@ -93,7 +100,6 @@ class CANBus:
         
         self.print_out_sequence()
         self.frame = ""
-        # return 0
         
     def check_bit_error(self, b1, b2, node1, node2):
         if b1 & b2:
@@ -131,6 +137,8 @@ if __name__ == "__main__":
     
     can_bus = CANBus()
     
+    print("\n********** Start of Simulation **********\n")
+    print("Initial State:")
     victime_ecu = Node("victime")
     print(victime_ecu)
     
@@ -145,18 +153,35 @@ if __name__ == "__main__":
     
     print("\n")
         
-    if can_bus.is_idle():
-        for attr in frame1_victime.__dict__:
-            frame1_bits = getattr(frame1_victime, attr)
-            for b1 in frame1_bits:
-                can_bus.receive_frames(b1=int(b1), attr=attr, node1=victime_ecu)
-
-    can_bus.print_out_sequence()
+    '''    if can_bus.is_idle():
+            for attr in frame1_victime.__dict__:
+                frame1_bits = getattr(frame1_victime, attr)
+                for b1 in frame1_bits:
+                    can_bus.receive_frames(b1=int(b1), attr=attr, node1=victime_ecu)
+    '''
     
+    ''' broadcast non concurrent send  '''
+    nodes = [adversary_ecu, victime_ecu]
+    # while True: TODO it should be that maybe using a timer to slow the flow, for now i'll use for range loop. In this section the adversary observe the transmission and then act
+    for i in range(1, 11):
+        time.sleep(1)
+        victime_ecu.send_broadcast(can_bus, frame1_victime, nodes)
+
+        can_bus.print_out_sequence()
+        print("\n")
+        
     count = 0
     
-    print("\n")
+    print("********** Start of Bus-off attack **********")
+
+    try:
+        for i in range(1, 41):
+            victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, frame2_adversary, 2)
     
+    except:
+        print("\n******** System-Off ********\n")
+    
+    '''
     if can_bus.is_idle():
         for attr in frame1_victime.__dict__:
             frame1_bits = getattr(frame1_victime, attr)
@@ -182,4 +207,5 @@ if __name__ == "__main__":
 
     except:
         print("\n******** System-Off ********\n")
-    
+        
+    '''
