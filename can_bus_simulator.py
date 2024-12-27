@@ -1,5 +1,7 @@
 import time
+from matplotlib import pyplot as plt
 from bus_frame import CANFrame
+from exception_classes import *
 from node import Node
 
 
@@ -16,20 +18,27 @@ class CANBus:
     
     def set_status(self, s):
         self.stat = s
+        print("CAN bus status: ", self.stat)
     
     def elaborate_frame(self, node):
         global count
         if count == 0:
+            print(node.name + " frame in elaboration: " + str(node.can_frame))
             self.set_status(self.status[1])
-            print(node.name + " frame in elaboration. CAN bus status: ", self.stat)
             
         elif count == 105:
+            print(node.name + " frame elaborated.")
             self.set_status(self.status[0])
-            print(node.name + " frame elaborated. CAN bus status: ", self.stat)
             count = 0
             return 0
         
         count += 1
+        return 0
+
+    '''
+    the mismatch in C3 must occur in either the control or the data ﬁeld. Note that this is infeasible in other
+    ﬁelds such as CRC and ACK, because they are determined by the CAN controller
+    '''
 
     def receive_frames(self, b1=None, b2=None, attr="", node1=None, node2=None):
         global count
@@ -47,7 +56,7 @@ class CANBus:
             self.frame += str(b1 & b2)
             return 0
             
-        elif attr == self.frame_segments[1]:    # "id - arbitration phase"
+        elif attr == self.frame_segments[1]:    # "id - arbitration phase"  TODO se non hanno stesso id non succede niente, controllare
             if count == 0:
                 print("Start of Arbitration.")
 
@@ -58,14 +67,14 @@ class CANBus:
             else:
                 
                 if b1 == 0 and b2 == 1:
-                    print("Arbitration winner: ", node1.name)           #TODO ora dovrei usare il metodo dei nodi per il rilevamento degli errori
+                    print("Arbitration winner: ", node1.name)
                     self.elaborate_frame(node1)
-                    return True                                         #TODO non so se forse è meglio lanciare un'eccezione
+                    return 0                                         #TODO dovrei fare qualcosa per fermare il ciclo for che fa continuare la comparazione del frame
                 
                 elif b1 == 1 and b2 == 0:
                     print("Arbitration winner: ", node2.name)
                     self.elaborate_frame(node2)
-                    return True
+                    return 0                                         #TODO dovrei fare qualcosa per fermare il ciclo for che fa continuare la comparazione del frame
                     
                 else:
                     self.frame += str(b1 & b2)
@@ -73,17 +82,18 @@ class CANBus:
             count += 1
             return 0
         
-        elif attr == self.frame_segments[2]:    # "dlc - bit error starts here"
+        elif attr == self.frame_segments[2]:    # "dlc - bit error check"
             if count == 11:
                 count += 1
                 print("Two arbitration winners.")
                 
             self.check_bit_error(b1, b2, node1, node2)
-            # self.frame += str(b1 & b2)
             return 0
         
-        elif attr == self.frame_segments[3]:    # "data"
+        elif attr == self.frame_segments[3]:    # "data - bit error check"
             self.frame += str(b1 & b2)
+            self.check_bit_error(b1, b2, node1, node2)
+
             return 0
         
         elif attr == self.frame_segments[4]:    # "crc"
@@ -111,15 +121,21 @@ class CANBus:
             if b1 == 0 and b2 == 1:
                 print("Bit-error detected, recessive bit from: ", node2.name)   # recessive (1) from node2
                 node2.error_detected()
-                return True
+                self.set_status(self.status[0])
+                raise BitErrorException
+                #return 0
                 
             elif b1 == 1 and b2 == 0:
                 print("Bit-error detected, recessive bit from: ", node1.name)   # recessive (1) from node1
                 node1.error_detected()
-                return True
+                self.set_status(self.status[0])
+                raise BitErrorException
+                #return 0
                     
             else:
                 self.frame += str(b1 & b2)
+                
+        return 0
 
     
     def print_out_sequence(self):
@@ -130,6 +146,34 @@ class CANBus:
     
 
 ### MAIN ###
+
+'''TODO the exact timing of message transmissions becomes rather
+predictable and even determinative: 3 bit-time after the preceded
+ID completion. -> 4.3 In oder to do that i could add a flag to activate the attacker fabricated frame transmission when the CAN bus is processing the isf'''
+
+'''Bus-off attack by exploiting preceded IDs. In the above exam-
+ple, to attack M3, the adversary can monitor the CAN bus, learn its
+preceded ID of M2 or even M2’s preceded ID of M1, and buffer
+an attack message with ID=M3'''
+
+''' FASE DI ATTACCO PER LA FABBRICAZIONE DEL FRAME
+L'attaccante vede che il bus sta processando un frame e che ci sono altri frame nel buffer dello stesso nodo da processare. Dunque il frame che sta processando avrà 
+priorità maggiore di quelli nel buffer. A questo punto fabbrica il proprio frame in base a quello in corso di elaborazione per causare l'errore sui frame che sono nel buffer.
+
+[In questo primo caso posso mandare una lista di frame come se fossero in buffer e fabbricare il frame in base al primo(che deve quindi avere priorità maggiore degli altri)
+e poi inviare quello attaccante]
+
+OPPURE
+
+Posso considerare questo scenario:
+Consider an example
+where a victim node periodically transmits message V, which has no preceded IDs. In such a case, just before the
+transmission of V, the adversary can inject some message P and
+an attack message A, sequentially. Hence, V transmission gets
+delayed until the completion of P, i.e., the adversary fabricates P
+as the preceded ID of V, and thus the attack message is synchro-
+nized with its target
+'''
 
 if __name__ == "__main__":
     global count
@@ -145,7 +189,7 @@ if __name__ == "__main__":
     adversary_ecu = Node("adversary")
     print(adversary_ecu)
     
-    frame1_victime = victime_ecu.make_frame(id="01000100001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
+    frame1_victime = victime_ecu.make_frame(id="01000000001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
     frame2_adversary = adversary_ecu.make_frame(id="01000000001", dlc="0000", data="0000000100000010000000110000010011111111111111111111111100000000")
         
     print("victime " + "".join(getattr(frame1_victime, attribute) for attribute in frame1_victime.__dict__))
@@ -153,22 +197,22 @@ if __name__ == "__main__":
     
     print("\n")
         
-    '''    if can_bus.is_idle():
-            for attr in frame1_victime.__dict__:
-                frame1_bits = getattr(frame1_victime, attr)
-                for b1 in frame1_bits:
-                    can_bus.receive_frames(b1=int(b1), attr=attr, node1=victime_ecu)
-    '''
-    
+    victim_tec_values = []
+    adversary_tec_values = []
+            
     ''' broadcast non concurrent send  '''
     nodes = [adversary_ecu, victime_ecu]
     # while True: TODO it should be that maybe using a timer to slow the flow, for now i'll use for range loop. In this section the adversary observe the transmission and then act
     for i in range(1, 11):
-        time.sleep(1)
+        # time.sleep(1)
         victime_ecu.send_broadcast(can_bus, frame1_victime, nodes)
 
         can_bus.print_out_sequence()
         print("\n")
+        
+        # Update TEC history for plotting
+        victim_tec_values = victime_ecu.tec_history
+        adversary_tec_values = adversary_ecu.tec_history
         
     count = 0
     
@@ -176,36 +220,22 @@ if __name__ == "__main__":
 
     try:
         for i in range(1, 41):
+            print("Iteration n ", i)
             victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, frame2_adversary, 2)
+            
+            # Update TEC history for plotting
+            victim_tec_values = victime_ecu.tec_history
+            adversary_tec_values = adversary_ecu.tec_history
     
-    except:
+    except BusOffException:
         print("\n******** System-Off ********\n")
     
-    '''
-    if can_bus.is_idle():
-        for attr in frame1_victime.__dict__:
-            frame1_bits = getattr(frame1_victime, attr)
-            frame2_bits = getattr(frame2_adversary, attr)
-            for b1, b2 in zip(frame1_bits, frame2_bits):
-                can_bus.receive_frames(int(b1), int(b2), attr, node1=victime_ecu, node2=adversary_ecu)
-              
-    # TODO la prima volta entrambi i nodi dovrebbero entrare in error passive, poi l'attaccante dovrebbe tornare in error active  
-    try:
-        for i in range(1, 40):
-            print("\n")
-            print("loop n: ", i)
-            if can_bus.is_idle():
-                for attr in frame1_victime.__dict__:
-                    frame1_bits = getattr(frame1_victime, attr)
-                    frame2_bits = getattr(frame2_adversary, attr)
-                    for b1, b2 in zip(frame1_bits, frame2_bits):
-                        can_bus.receive_frames(int(b1), int(b2), attr, node1=victime_ecu, node2=adversary_ecu)
-
-            # can_bus.print_out_sequence()
-            print(adversary_ecu)
-            print(victime_ecu)
-
-    except:
-        print("\n******** System-Off ********\n")
-        
-    '''
+    # After the simulation, plot TEC values
+    plt.plot(victim_tec_values, label="Victim TEC")
+    plt.plot(adversary_tec_values, label="Adversary TEC")
+    plt.xlabel('Time (Simulation Steps)')
+    plt.ylabel('TEC (Transmission Error Counter)')
+    plt.legend()
+    plt.title('TEC Over Time for Victim and Adversary')
+    plt.show()
+    

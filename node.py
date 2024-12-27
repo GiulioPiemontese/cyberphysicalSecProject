@@ -1,5 +1,6 @@
 
 from bus_frame import CANFrame
+from exception_classes import *
 
 class Node:
     stat = ['error active', 'error passive', 'bus off']
@@ -9,6 +10,7 @@ class Node:
         self.rec = 0
         self.status = self.stat[0]
         self.name = name
+        self.tec_history = [0]
         
     def make_frame(self, id, dlc, data):
         self.can_frame = CANFrame()
@@ -41,8 +43,10 @@ class Node:
                     frame1_bits = getattr(frame1, attr)
                     frame2_bits = getattr(frame2, attr)
                     for b1, b2 in zip(frame1_bits, frame2_bits):
-                        can_bus.receive_frames(int(b1), int(b2), attr, node1=self, node2=nodes[0])
-
+                        try:
+                            can_bus.receive_frames(int(b1), int(b2), attr, node1=self, node2=nodes[0])
+                        except BitErrorException:
+                            return 0
             print(nodes[0]) # adversary
             print(self)  # victime
         
@@ -51,15 +55,29 @@ class Node:
     # TODO qui il nodo attaccante dovrebbe fabbricare il frame per poi effettuare il busoff attack
     def receive_broadcast(self, frame):
         print(f"{self.name} received broadcast frame: {frame}")
+        if self.name == "attacker":
+            self.fabricate_frame(frame)
         return 0
     
-    # active error: the victim experiences bit error, transmits an active error ﬂag, and increases its TEC by 8
-    # TODO i don't know if i have to send also the error flags
+    # method for the attacker to fabricate victime's frame with Empty Message Filter
+    # 4.2 Empty msg filter. Since an adversary can read contents only from accepted messages, meeting C1 depends on how the filter 
+    # is set at the compromised ECU. (maybe for the simulation i assume i can read it, it is the situation for Empty message filter)
+    def fabricate_frame(self, frame):
+        # In order to cause a bit error, it should happen in the control (dlc) or data frame segment
+        
+        # 4.1 Since CAN messages normally have DLC set to at least 1 and non-zero data values, one simple 
+        # but most deﬁnite way for the adversary to cause a mismatch is to set the attack message’s DLC or DATA values to all 0s
+        self.can_frame.dlc = "0000"
+        self.can_frame.data = "0000000000000000000000000000000000000000000000000000000000000000"
+        
+        return 0
+    
     def error_detected(self):
         
         # error active status
         if self.status == self.stat[0]:
             self.tec += 8
+            self.tec_history.append(self.tec)
             
             if self.tec >= 128:
                 self.status = self.stat[1]
@@ -70,19 +88,26 @@ class Node:
         
             if (self.tec >= 128 and self.tec <= 255) or (self.rec >= 128):  # TODO non mi convince la parte relativa al rec
                 self.tec += 8   # +8 for the bit error
+                self.tec_history.append(self.tec)
+                
                 self.tec -= 1   # -1 for the successful retrasmission
+                self.tec_history.append(self.tec)
+            
 
             if self.tec > 255 or self.rec >= 128:
                 self.status = self.stat[2]
                 print("Node switch to status: ", self.status)
+                
                 self.reset_node()
             
     def reset_node(self):
         self.tec = 0
         self.rec = 0
         self.status = self.stat[0]
+        
         print("The node excedeed TEC 255. Node is shutted down.")
-        raise Exception
+        
+        raise BusOffException
 
     def __str__(self):
         return f"Node:{self.name}, TEC={self.tec}, REC={self.rec}, Status={self.status}"
