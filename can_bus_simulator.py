@@ -1,6 +1,5 @@
 import time
 from matplotlib import pyplot as plt
-from bus_frame import CANFrame
 from exception_classes import *
 from node import Node
 
@@ -145,35 +144,9 @@ class CANBus:
             print("Bitwise AND-gate output frame: ", self.frame)
     
 
+
+
 ### MAIN ###
-
-'''TODO the exact timing of message transmissions becomes rather
-predictable and even determinative: 3 bit-time after the preceded
-ID completion. -> 4.3 In oder to do that i could add a flag to activate the attacker fabricated frame transmission when the CAN bus is processing the isf'''
-
-'''Bus-off attack by exploiting preceded IDs. In the above exam-
-ple, to attack M3, the adversary can monitor the CAN bus, learn its
-preceded ID of M2 or even M2’s preceded ID of M1, and buffer
-an attack message with ID=M3'''
-
-''' FASE DI ATTACCO PER LA FABBRICAZIONE DEL FRAME
-L'attaccante vede che il bus sta processando un frame e che ci sono altri frame nel buffer dello stesso nodo da processare. Dunque il frame che sta processando avrà 
-priorità maggiore di quelli nel buffer. A questo punto fabbrica il proprio frame in base a quello in corso di elaborazione per causare l'errore sui frame che sono nel buffer.
-
-[In questo primo caso posso mandare una lista di frame come se fossero in buffer e fabbricare il frame in base al primo(che deve quindi avere priorità maggiore degli altri)
-e poi inviare quello attaccante]
-
-OPPURE
-
-Posso considerare questo scenario:
-Consider an example
-where a victim node periodically transmits message V, which has no preceded IDs. In such a case, just before the
-transmission of V, the adversary can inject some message P and
-an attack message A, sequentially. Hence, V transmission gets
-delayed until the completion of P, i.e., the adversary fabricates P
-as the preceded ID of V, and thus the attack message is synchro-
-nized with its target
-'''
 
 if __name__ == "__main__":
     global count
@@ -190,7 +163,7 @@ if __name__ == "__main__":
     print(adversary_ecu)
     
     frame1_victime = victime_ecu.make_frame(id="01000000001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
-    frame2_adversary = adversary_ecu.make_frame(id="01000000001", dlc="0000", data="0000000100000010000000110000010011111111111111111111111100000000")
+    frame2_adversary = adversary_ecu.make_frame(id="01000111101", dlc="0000", data="0000000100000010000000110000010011111111111111111111111100000000")
         
     print("victime " + "".join(getattr(frame1_victime, attribute) for attribute in frame1_victime.__dict__))
     print("adversary " + "".join(getattr(frame2_adversary, attribute) for attribute in frame2_adversary.__dict__))
@@ -202,26 +175,27 @@ if __name__ == "__main__":
             
     ''' broadcast non concurrent send  '''
     nodes = [adversary_ecu, victime_ecu]
-    # while True: TODO it should be that maybe using a timer to slow the flow, for now i'll use for range loop. In this section the adversary observe the transmission and then act
-    for i in range(1, 11):
-        # time.sleep(1)
+    for i in range(1, 6):
+        time.sleep(1)
         victime_ecu.send_broadcast(can_bus, frame1_victime, nodes)
 
         can_bus.print_out_sequence()
         print("\n")
-        
-        # Update TEC history for plotting
-        victim_tec_values = victime_ecu.tec_history
-        adversary_tec_values = adversary_ecu.tec_history
-        
+                
     count = 0
     
-    print("********** Start of Bus-off attack **********")
+    print("********** Start of Bus-off attack **********\n")
+
+    print(victime_ecu.can_frame)
+    print(adversary_ecu.can_frame)
 
     try:
         for i in range(1, 41):
-            print("Iteration n ", i)
-            victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, frame2_adversary, 2)
+            print("Iteration n ", i)        #TODO revove this print
+            victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, adversary_ecu.can_frame, 2)
+            
+            print(victime_ecu)
+            print(adversary_ecu)
             
             # Update TEC history for plotting
             victim_tec_values = victime_ecu.tec_history
@@ -232,7 +206,6 @@ if __name__ == "__main__":
     
     # After the simulation, plot TEC values
     plt.plot(victim_tec_values, label="Victim TEC")
-    plt.plot(adversary_tec_values, label="Adversary TEC")
     plt.xlabel('Time (Simulation Steps)')
     plt.ylabel('TEC (Transmission Error Counter)')
     plt.legend()

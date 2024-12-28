@@ -23,13 +23,17 @@ class Node:
     # agli altri nodi in modo che l'attaccante possa poi sviluppare l'attacco controllando quel frame e costruendo il suo in base a quello
     # Method takes: can bus that receive the frame, a list of others nodes
     def send_broadcast(self, can_bus, frame1, nodes, frame2=None, n_senders=1):#TODO qui ci vorrebbe un qualcosa per capire quanti stanno inviando contemporaneamente i frame (tipo un parametro: n_senders)
+        
         if n_senders == 1:
             if can_bus.is_idle():
                 print(f"{self.name} is sending frame to CAN bus...")
+                
                 for attr in frame1.__dict__:
                     frame1_bits = getattr(frame1, attr)
+                    
                     for b1 in frame1_bits:
                         can_bus.receive_frames(b1=int(b1), attr=attr, node1=self)
+                
                 print(f"{self.name} finished sending frame.")
             
             for node in nodes:
@@ -38,37 +42,46 @@ class Node:
         
         else:
             print("\n")
+            
             if can_bus.is_idle():
+            
                 for attr in frame1.__dict__:
                     frame1_bits = getattr(frame1, attr)
                     frame2_bits = getattr(frame2, attr)
+            
                     for b1, b2 in zip(frame1_bits, frame2_bits):
+            
                         try:
                             can_bus.receive_frames(int(b1), int(b2), attr, node1=self, node2=nodes[0])
+            
                         except BitErrorException:
                             return 0
+                        
             print(nodes[0]) # adversary
             print(self)  # victime
         
         return 0
     
-    # TODO qui il nodo attaccante dovrebbe fabbricare il frame per poi effettuare il busoff attack
     def receive_broadcast(self, frame):
         print(f"{self.name} received broadcast frame: {frame}")
-        if self.name == "attacker":
+        
+        if self.name == "adversary":
             self.fabricate_frame(frame)
+        
         return 0
     
-    # method for the attacker to fabricate victime's frame with Empty Message Filter
+    # method for the attacker to fabricate victime's frame with Empty Message Filter situation
     # 4.2 Empty msg filter. Since an adversary can read contents only from accepted messages, meeting C1 depends on how the filter 
-    # is set at the compromised ECU. (maybe for the simulation i assume i can read it, it is the situation for Empty message filter)
+    # is set at the compromised ECU.
     def fabricate_frame(self, frame):
         # In order to cause a bit error, it should happen in the control (dlc) or data frame segment
         
         # 4.1 Since CAN messages normally have DLC set to at least 1 and non-zero data values, one simple 
         # but most deﬁnite way for the adversary to cause a mismatch is to set the attack message’s DLC or DATA values to all 0s
-        self.can_frame.dlc = "0000"
-        self.can_frame.data = "0000000000000000000000000000000000000000000000000000000000000000"
+        fabricated_dlc = "0000"
+        fabricated_data = "0000000000000000000000000000000000000000000000000000000000000000"
+        
+        self.make_frame(frame.id, fabricated_dlc, fabricated_data)
         
         return 0
     
@@ -86,7 +99,7 @@ class Node:
         # error passive status
         elif self.status == self.stat[1]:
         
-            if (self.tec >= 128 and self.tec <= 255) or (self.rec >= 128):  # TODO non mi convince la parte relativa al rec
+            if (self.tec >= 128 and self.tec <= 255) or (self.rec >= 128):
                 self.tec += 8   # +8 for the bit error
                 self.tec_history.append(self.tec)
                 
@@ -94,7 +107,7 @@ class Node:
                 self.tec_history.append(self.tec)
             
 
-            if self.tec > 255 or self.rec >= 128:
+            if self.tec > 255:
                 self.status = self.stat[2]
                 print("Node switch to status: ", self.status)
                 
