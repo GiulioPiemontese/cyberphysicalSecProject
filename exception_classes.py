@@ -1,15 +1,15 @@
 class BitErrorException(Exception):
     """
-    Exception raised when a bit error is detected in the CAN message.
+    Exception raised when a bit error is detected in the CAN bus.
     """
     def __init__(self):
-        self.message = "A bit error has occurred in the CAN message."
+        self.message = "A bit error has occurred in the CAN bus."
         super().__init__(self.message)
 
 
 class BusOffException(Exception):
     """
-    Exception raised when the system is shut down due to critical errors like TEC overflow.
+    Exception raised when the system is shut down due to critical error.
     """
     def __init__(self):
         self.message = "The system is turned off due to a critical error."

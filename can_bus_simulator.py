@@ -24,21 +24,15 @@ class CANBus:
         if count == 0:
             print(node.name + " frame in elaboration: " + str(node.can_frame))
             self.set_status(self.status[1])
-            
-        elif count == 105:
-            print(node.name + " frame elaborated.")
-            self.set_status(self.status[0])
-            count = 0
-            return 0
-        
+                    
         count += 1
         return 0
 
+
     '''
-    the mismatch in C3 must occur in either the control or the data ﬁeld. Note that this is infeasible in other
+    The mismatch in C3 must occur in either the control or the data ﬁeld. Note that this is infeasible in other
     ﬁelds such as CRC and ACK, because they are determined by the CAN controller
     '''
-
     def receive_frames(self, b1=None, b2=None, attr="", node1=None, node2=None):
         global count
         
@@ -55,7 +49,7 @@ class CANBus:
             self.frame += str(b1 & b2)
             return 0
             
-        elif attr == self.frame_segments[1]:    # "id - arbitration phase"  TODO se non hanno stesso id non succede niente, controllare
+        elif attr == self.frame_segments[1]:    # "id - arbitration phase"
             if count == 0:
                 print("Start of Arbitration.")
 
@@ -68,12 +62,12 @@ class CANBus:
                 if b1 == 0 and b2 == 1:
                     print("Arbitration winner: ", node1.name)
                     self.elaborate_frame(node1)
-                    return 0                                         #TODO dovrei fare qualcosa per fermare il ciclo for che fa continuare la comparazione del frame
+                    raise FrameElaborated
                 
                 elif b1 == 1 and b2 == 0:
                     print("Arbitration winner: ", node2.name)
                     self.elaborate_frame(node2)
-                    return 0                                         #TODO dovrei fare qualcosa per fermare il ciclo for che fa continuare la comparazione del frame
+                    raise FrameElaborated
                     
                 else:
                     self.frame += str(b1 & b2)
@@ -122,14 +116,12 @@ class CANBus:
                 node2.error_detected()
                 self.set_status(self.status[0])
                 raise BitErrorException
-                #return 0
                 
             elif b1 == 1 and b2 == 0:
                 print("Bit-error detected, recessive bit from: ", node1.name)   # recessive (1) from node1
                 node1.error_detected()
                 self.set_status(self.status[0])
                 raise BitErrorException
-                #return 0
                     
             else:
                 self.frame += str(b1 & b2)
@@ -186,12 +178,12 @@ if __name__ == "__main__":
     
     print("********** Start of Bus-off attack **********\n")
 
-    print(victime_ecu.can_frame)
-    print(adversary_ecu.can_frame)
+    print("Old victim's frame sent: ", victime_ecu.can_frame)
+    print("Fabricated adversary's frame: ", adversary_ecu.can_frame)
 
     try:
         for i in range(1, 41):
-            print("Iteration n ", i)        #TODO revove this print
+            print("\nIteration n ", i)
             victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, adversary_ecu.can_frame, 2)
             
             print(victime_ecu)

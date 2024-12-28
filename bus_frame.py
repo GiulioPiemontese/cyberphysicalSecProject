@@ -11,9 +11,9 @@ class CANFrame:
         self.ifs = "111"                                                                # 3 bits inter-frame space
         
     def make(self, id, dlc, data):
-        self.id = id                    # 11 bits id
-        self.dlc = dlc                  # 4 bits data length code
-        self.data = data                # 64 bits data content 
+        self.id = id
+        self.dlc = dlc
+        self.data = data
     
     def tot_len_frame(self):
         return len(self.sof) + len(self.id) + len(self.dlc) + len(self.data) + len(self.crc) + len(self.ack) + len(self.eof) + len(self.ifs)

@@ -19,10 +19,8 @@ class Node:
         
         return self.can_frame
     
-    # forse conviene utilizzare un metodo del tipo send_broadcast per inviare il messaggio si al CAN bus che 
-    # agli altri nodi in modo che l'attaccante possa poi sviluppare l'attacco controllando quel frame e costruendo il suo in base a quello
-    # Method takes: can bus that receive the frame, a list of others nodes
-    def send_broadcast(self, can_bus, frame1, nodes, frame2=None, n_senders=1):#TODO qui ci vorrebbe un qualcosa per capire quanti stanno inviando contemporaneamente i frame (tipo un parametro: n_senders)
+    # method to send via broadcast the frame to the CAN bus and other nodes
+    def send_broadcast(self, can_bus, frame1, nodes, frame2=None, n_senders=1):
         
         if n_senders == 1:
             if can_bus.is_idle():
@@ -34,6 +32,7 @@ class Node:
                     for b1 in frame1_bits:
                         can_bus.receive_frames(b1=int(b1), attr=attr, node1=self)
                 
+                can_bus.set_status(can_bus.status[0])
                 print(f"{self.name} finished sending frame.")
             
             for node in nodes:
@@ -56,12 +55,15 @@ class Node:
             
                         except BitErrorException:
                             return 0
+                        except FrameElaborated:
+                            return 0
                         
             print(nodes[0]) # adversary
             print(self)  # victime
         
         return 0
     
+    # each node receive the frame sent via broadcast
     def receive_broadcast(self, frame):
         print(f"{self.name} received broadcast frame: {frame}")
         
@@ -70,13 +72,14 @@ class Node:
         
         return 0
     
-    # method for the attacker to fabricate victime's frame with Empty Message Filter situation
-    # 4.2 Empty msg filter. Since an adversary can read contents only from accepted messages, meeting C1 depends on how the filter 
+    # Chapter 4.2: Empty msg filter. Since an adversary can read contents only from accepted messages, meeting C1 depends on how the filter 
     # is set at the compromised ECU.
+    
+    # method for the attacker to fabricate victime's frame with Empty Message Filter situation
     def fabricate_frame(self, frame):
         # In order to cause a bit error, it should happen in the control (dlc) or data frame segment
         
-        # 4.1 Since CAN messages normally have DLC set to at least 1 and non-zero data values, one simple 
+        # Chapter 4.1: Since CAN messages normally have DLC set to at least 1 and non-zero data values, one simple 
         # but most deﬁnite way for the adversary to cause a mismatch is to set the attack message’s DLC or DATA values to all 0s
         fabricated_dlc = "0000"
         fabricated_data = "0000000000000000000000000000000000000000000000000000000000000000"
