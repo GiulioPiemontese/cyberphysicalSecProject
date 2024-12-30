@@ -1,0 +1,344 @@
+
+********** Start of Simulation **********
+
+Initial State:
+Node:victim, TEC=0, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000111101, DLC=0000, Data=0000000100000010000000110000010011111111111111111111111100000000, CRC=000000000000000, ACK=1, EOF=1111111
+victim 0010000000010100000000010000001000000011000001000000000100000010000000110000010000000000000000011111111111
+adversary 0010001111010000000000010000001000000011000001001111111111111111111111110000000000000000000000011111111111
+
+
+victim is sending frame to CAN bus...
+*** No Arbitration ***
+victim frame in elaboration: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+CAN bus status:  non-idle
+CAN bus status:  idle
+victim finished sending frame.
+adversary received broadcast frame: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+No bitwise AND-gate output frame.
+
+
+victim is sending frame to CAN bus...
+CAN bus status:  idle
+victim finished sending frame.
+adversary received broadcast frame: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+No bitwise AND-gate output frame.
+
+
+victim is sending frame to CAN bus...
+CAN bus status:  idle
+victim finished sending frame.
+adversary received broadcast frame: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+No bitwise AND-gate output frame.
+
+
+victim is sending frame to CAN bus...
+CAN bus status:  idle
+victim finished sending frame.
+adversary received broadcast frame: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+No bitwise AND-gate output frame.
+
+
+victim is sending frame to CAN bus...
+CAN bus status:  idle
+victim finished sending frame.
+adversary received broadcast frame: ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+No bitwise AND-gate output frame.
+
+
+********** Start of Bus-off attack **********
+
+Old victim's frame sent:  ID=01000000001, DLC=0100, Data=0000000100000010000000110000010000000001000000100000001100000100, CRC=000000000000000, ACK=1, EOF=1111111
+Fabricated adversary's frame:  ID=01000000001, DLC=0000, Data=0000000000000000000000000000000000000000000000000000000000000000, CRC=000000000000000, ACK=1, EOF=1111111
+
+Iteration n  1
+
+
+Start of Arbitration.
+Two arbitration winners.
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=8, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  2
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=16, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  3
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=24, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  4
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=32, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  5
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=40, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  6
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=48, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  7
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=56, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  8
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=64, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  9
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=72, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  10
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=80, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  11
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=88, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  12
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=96, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  13
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=104, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  14
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=112, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  15
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=120, REC=0, Status=error active
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  16
+
+
+Bit-error detected, recessive bit from:  victim
+Node switch to status:  error passive
+CAN bus status:  idle
+Node:victim, TEC=128, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  17
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=135, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  18
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=142, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  19
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=149, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  20
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=156, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  21
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=163, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  22
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=170, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  23
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=177, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  24
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=184, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  25
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=191, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  26
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=198, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  27
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=205, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  28
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=212, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  29
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=219, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  30
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=226, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  31
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=233, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  32
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=240, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  33
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=247, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  34
+
+
+Bit-error detected, recessive bit from:  victim
+CAN bus status:  idle
+Node:victim, TEC=254, REC=0, Status=error passive
+Node:adversary, TEC=0, REC=0, Status=error active
+
+Iteration n  35
+
+
+Bit-error detected, recessive bit from:  victim
+Node switch to status:  bus off
+The node excedeed TEC 255. Node is shutted down.
+
+******** System-Off ********
+

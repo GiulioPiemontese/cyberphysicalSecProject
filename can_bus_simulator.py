@@ -148,16 +148,18 @@ if __name__ == "__main__":
     
     print("\n********** Start of Simulation **********\n")
     print("Initial State:")
-    victime_ecu = Node("victime")
-    print(victime_ecu)
+    victim_ecu = Node("victim")
+    print(victim_ecu)
     
     adversary_ecu = Node("adversary")
     print(adversary_ecu)
     
-    frame1_victime = victime_ecu.make_frame(id="01000000001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
+    frame1_victim = victim_ecu.make_frame(id="01000000001", dlc="0100", data="0000000100000010000000110000010000000001000000100000001100000100")
+    
+    # this adversary frame is just to show that it will be changed by the sniffing of the victim's frame
     frame2_adversary = adversary_ecu.make_frame(id="01000111101", dlc="0000", data="0000000100000010000000110000010011111111111111111111111100000000")
         
-    print("victime " + "".join(getattr(frame1_victime, attribute) for attribute in frame1_victime.__dict__))
+    print("victim " + "".join(getattr(frame1_victim, attribute) for attribute in frame1_victim.__dict__))
     print("adversary " + "".join(getattr(frame2_adversary, attribute) for attribute in frame2_adversary.__dict__))
     
     print("\n")
@@ -166,10 +168,10 @@ if __name__ == "__main__":
     adversary_tec_values = []
             
     ''' broadcast non concurrent send  '''
-    nodes = [adversary_ecu, victime_ecu]
+    nodes = [adversary_ecu, victim_ecu]
     for i in range(1, 6):
         time.sleep(1)
-        victime_ecu.send_broadcast(can_bus, frame1_victime, nodes)
+        victim_ecu.send_broadcast(can_bus, frame1_victim, nodes)
 
         can_bus.print_out_sequence()
         print("\n")
@@ -178,20 +180,19 @@ if __name__ == "__main__":
     
     print("********** Start of Bus-off attack **********\n")
 
-    print("Old victim's frame sent: ", victime_ecu.can_frame)
+    print("Old victim's frame sent: ", victim_ecu.can_frame)
     print("Fabricated adversary's frame: ", adversary_ecu.can_frame)
 
     try:
         for i in range(1, 41):
             print("\nIteration n ", i)
-            victime_ecu.send_broadcast(can_bus, frame1_victime, nodes, adversary_ecu.can_frame, 2)
+            victim_ecu.send_broadcast(can_bus, frame1_victim, nodes, adversary_ecu.can_frame, 2)
             
-            print(victime_ecu)
+            print(victim_ecu)
             print(adversary_ecu)
             
             # Update TEC history for plotting
-            victim_tec_values = victime_ecu.tec_history
-            adversary_tec_values = adversary_ecu.tec_history
+            victim_tec_values = victim_ecu.tec_history
     
     except BusOffException:
         print("\n******** System-Off ********\n")
@@ -201,6 +202,6 @@ if __name__ == "__main__":
     plt.xlabel('Time (Simulation Steps)')
     plt.ylabel('TEC (Transmission Error Counter)')
     plt.legend()
-    plt.title('TEC Over Time for Victim and Adversary')
+    plt.title('TEC Over Time for Victim')
     plt.show()
     

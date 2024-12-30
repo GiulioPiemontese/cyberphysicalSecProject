@@ -59,7 +59,7 @@ class Node:
                             return 0
                         
             print(nodes[0]) # adversary
-            print(self)  # victime
+            print(self)  # victim
         
         return 0
     
@@ -75,7 +75,7 @@ class Node:
     # Chapter 4.2: Empty msg filter. Since an adversary can read contents only from accepted messages, meeting C1 depends on how the filter 
     # is set at the compromised ECU.
     
-    # method for the attacker to fabricate victime's frame with Empty Message Filter situation
+    # method for the attacker to fabricate victim's frame with Empty Message Filter situation
     def fabricate_frame(self, frame):
         # In order to cause a bit error, it should happen in the control (dlc) or data frame segment
         
